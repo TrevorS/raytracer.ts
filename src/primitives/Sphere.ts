@@ -8,8 +8,8 @@ class Sphere extends PrimitiveObject {
   center: Vector;
   radius: number;
 
-  constructor(center: Vector, radius: number) {
-    super();
+  constructor(center: Vector, radius: number, color: Vector) {
+    super(color);
 
     this.center = center;
     this.radius = radius;

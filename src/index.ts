@@ -5,8 +5,9 @@ import Sphere from './primitives/Sphere';
 import Vector from './geometry/Vector';
 import Options from './engine/Options';
 
-import { degreesToRadians } from './geometry/Utilities';
+import { degreesToRadians, mix } from './geometry/Utilities';
 import Intersection from './geometry/Intersection';
+import SurfaceData from './geometry/SurfaceData';
 
 const WIDTH = 640;
 const HEIGHT = 480;
@@ -33,7 +34,13 @@ function main() {
 
     const randomRadius = (0.5 + Math.random() * 0.5);
 
-    objects.push(new Sphere(randomPosition, randomRadius));
+    const randomColor = new Vector(
+      Math.random(),
+      Math.random(),
+      Math.random(),
+    );
+
+    objects.push(new Sphere(randomPosition, randomRadius, randomColor));
   }
 
   const options = new Options(WIDTH, HEIGHT, FOV, CAMERA_TO_WORLD);
@@ -41,7 +48,9 @@ function main() {
   render(options, objects);
 }
 
-function render(options: Options, objects: Array<PrimitiveObject>): num {
+function render(options: Options, objects: Array<PrimitiveObject>): Array<Vector> {
+  const framebuffer = new Array<Vector>();
+
   const scale = Math.tan(degreesToRadians(options.fov * 0.5));
   const imageAspectRatio = options.width / options.height;
 
@@ -58,8 +67,12 @@ function render(options: Options, objects: Array<PrimitiveObject>): num {
       dir.normalize();
 
       const result = castRay(orig, dir, objects);
+
+      framebuffer.push(result);
     }
   }
+
+  return framebuffer;
 }
 
 function trace(orig: Vector, dir: Vector, objects: Array<PrimitiveObject>): Intersection {
@@ -76,6 +89,32 @@ function trace(orig: Vector, dir: Vector, objects: Array<PrimitiveObject>): Inte
   return nearest;
 }
 
-function castRay(orig: Vector, dir: Vector, objects: Array<PrimitiveObject>): number {
-  return 0;
+function castRay(orig: Vector, dir: Vector, objects: Array<PrimitiveObject>): Vector {
+  let hitColor = Vector.zero();
+
+  objects.forEach((object) => {
+    const intersection = trace(orig, dir, objects);
+
+    // TODO: Fix this, isHit should take care of not needed null check.
+    if (intersection.isHit() && intersection.primitive !== null) {
+      const phit = orig.add(dir.multiply(intersection.distance));
+      const surfaceData = intersection.primitive.getSurfaceData(phit);
+
+      const scale = 4;
+
+      let pattern = getPattern(surfaceData, scale);
+
+      hitColor = mix(intersection.primitive.color, intersection.primitive.color.multiply(0.8), pattern).multiply(
+          Math.max(0, surfaceData.nhit.dot(dir.multiply(-1))));
+    }
+  });
+
+  return hitColor;
+}
+
+function getPattern(surfaceData: SurfaceData, scale:number): number {
+  const p1 = (surfaceData.tex.x * scale) % 1 > 0.5 ? 1 : 0;
+  const p2 = (surfaceData.tex.y * scale) % 1 > 0.5 ? 1 : 0;
+
+  return p1 ^ p2;
 }
