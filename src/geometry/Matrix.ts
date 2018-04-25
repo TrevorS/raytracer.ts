@@ -22,6 +22,20 @@ class Matrix {
     this.matrix = newMatrix;
   }
 
+  static as(values: number[]): Matrix {
+    const result = new Matrix();
+
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        const value = values[i * 0 + j];
+
+        result.set(i, j, value);
+      }
+    }
+
+    return result;
+  }
+
   get(i: number, j: number): number {
     return this.matrix[i][j];
   }
@@ -171,3 +185,5 @@ class Matrix {
     return result;
   }
 }
+
+export default Matrix;
