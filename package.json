@@ -1,0 +1,11 @@
+{
+  "name": "raytracer.ts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:TrevorS/raytracer.ts.git",
+  "author": "Trevor Strieber <trevor@strieber.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^2.8.3"
+  }
+}
