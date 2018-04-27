@@ -5,7 +5,7 @@ import Sphere from './primitives/Sphere';
 import Vector from './geometry/Vector';
 import Options from './engine/Options';
 
-import { degreesToRadians, mix } from './geometry/Utilities';
+import { clamp, degreesToRadians, mix } from './geometry/Utilities';
 import Intersection from './geometry/Intersection';
 import SurfaceData from './geometry/SurfaceData';
 
@@ -45,7 +45,25 @@ function main() {
 
   const options = new Options(WIDTH, HEIGHT, FOV, CAMERA_TO_WORLD);
 
-  render(options, objects);
+  const results = render(options, objects);
+
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d');
+
+  if (ctx) {
+    results.forEach((vector, index) => {
+      const r = Math.floor(clamp(0, 1, vector.x) * 255);
+      const g = Math.floor(clamp(0, 1, vector.y) * 255);
+      const b = Math.floor(clamp(0, 1, vector.z) * 255);
+
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+      const x = index % WIDTH;
+      const y = Math.floor(index / WIDTH);
+
+      ctx.fillRect(x, y, 1, 1);
+    });
+  }
 }
 
 function render(options: Options, objects: Array<PrimitiveObject>): Array<Vector> {
@@ -118,3 +136,5 @@ function getPattern(surfaceData: SurfaceData, scale:number): number {
 
   return p1 ^ p2;
 }
+
+document.addEventListener('DOMContentLoaded', main);
